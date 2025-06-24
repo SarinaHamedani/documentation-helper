@@ -5,6 +5,8 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 
+from langchain.prompts import PromptTemplate
+
 load_dotenv()
 INDEX_NAME="langchain-doc-index"
 
@@ -20,10 +22,19 @@ def run_llm(query: str):
         retriever=docsearch.as_retriever(), combine_docs_chain=stuff_documents_chain
     )
 
-    res = qa.invoke(input={"input": query})
-    return res
+
+    result = qa.invoke(input={"input": query})
+    # chain = PromptTemplate.from_template(query) | chat
+    # result = chain.invoke(input={})
+    # print(result)
+    new_result = {
+        "query": result["input"],
+        "source_documents": result["context"],
+        "result": result["output"]
+    }
+    return new_result
 
 
 if __name__=="__main__":
     res = run_llm("What is a Langchain Chain?")
-    print(res["answer"])
+    print(res["result"])
