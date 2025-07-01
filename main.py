@@ -7,6 +7,7 @@ import streamlit as st
 from streamlit_chat import message
 
 from backend.core import run_llm
+import streamlit as st
 
 st.set_page_config(
     page_title="Your App Title",
@@ -19,6 +20,73 @@ from PIL import Image
 import requests
 from io import BytesIO
 
+# Sidebar for user information
+with st.sidebar:
+    st.title("👤 User Profile")
+    
+    # Initialize user info in session state if not exists
+    if "user_name" not in st.session_state:
+        st.session_state["user_name"] = ""
+    if "user_email" not in st.session_state:
+        st.session_state["user_email"] = ""
+    if "profile_picture" not in st.session_state:
+        st.session_state["profile_picture"] = None
+    
+    # Profile picture upload
+    st.subheader("Profile Picture")
+    uploaded_file = st.file_uploader(
+        "Upload your profile picture", 
+        type=['png', 'jpg', 'jpeg'],
+        key="profile_upload"
+    )
+    
+    if uploaded_file is not None:
+        st.session_state["profile_picture"] = uploaded_file
+        st.image(uploaded_file, width=150, caption="Your profile picture")
+    elif st.session_state["profile_picture"] is not None:
+        st.image(st.session_state["profile_picture"], width=150, caption="Your profile picture")
+    else:
+        # Default avatar if no picture uploaded
+        st.image("https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp&f=y", 
+                width=150, caption="Default avatar")
+    
+    # User name input
+    st.subheader("Name")
+    user_name = st.text_input(
+        "Enter your name",
+        value=st.session_state["user_name"],
+        placeholder="John Doe",
+        key="name_input"
+    )
+    if user_name != st.session_state["user_name"]:
+        st.session_state["user_name"] = user_name
+    
+    # User email input
+    st.subheader("Email")
+    user_email = st.text_input(
+        "Enter your email",
+        value=st.session_state["user_email"],
+        placeholder="john.doe@example.com",
+        key="email_input"
+    )
+    if user_email != st.session_state["user_email"]:
+        st.session_state["user_email"] = user_email
+    
+    # Display current user info
+    if st.session_state["user_name"] or st.session_state["user_email"]:
+        st.divider()
+        st.subheader("Current User Info")
+        if st.session_state["user_name"]:
+            st.write(f"**Name:** {st.session_state['user_name']}")
+        if st.session_state["user_email"]:
+            st.write(f"**Email:** {st.session_state['user_email']}")
+    
+    # Clear profile button
+    if st.button("Clear Profile", type="secondary"):
+        st.session_state["user_name"] = ""
+        st.session_state["user_email"] = ""
+        st.session_state["profile_picture"] = None
+        st.rerun()
 
 def create_sources_string(source_urls: Set[str]) -> str:
     if not source_urls:
